@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>LingBriefs</title>
+  <!-- DataTables CSS -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
       <style>
         body {
             font-family: Arial, sans-serif;
@@ -50,9 +52,14 @@
   <p>This site hosts data about amicus briefs filed by linguists at the Supreme Court.  Please forgive the site's current appearance.  It is under construction.</p>
 
   <h1>Supreme Court Linguistics Amicus Briefs</h1>
-  <table id="data-table" border="1"></table>
+  <table id="data-table" class="display" border="1"></table>
 
-  <script>
+  <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+
+    <script>
         const sheetId = '17IfQtXNHf5QUUiNMvhtD6fGk_lQkbTsBqGZiWYoL8KM';
         const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
 
@@ -62,19 +69,24 @@
                 const rows = csv.split("\n").map(row => row.split(","));
                 const table = document.getElementById("data-table");
 
-                rows.forEach(row => {
+                rows.forEach((row, rowIndex) => {
                     const tr = document.createElement("tr");
                     row.forEach(cell => {
-                        const td = document.createElement("td");
-                        td.textContent = cell;
-                        tr.appendChild(td);
+                        const cellElement = rowIndex === 0 ? document.createElement("th") : document.createElement("td");
+                        cellElement.textContent = cell;
+                        tr.appendChild(cellElement);
                     });
                     table.appendChild(tr);
+                });
+
+                // Initialize DataTables AFTER the table is built
+                $(document).ready(function() {
+                    $('#data-table').DataTable();
                 });
             })
             .catch(error => {
                 console.error('Error fetching the CSV:', error);
             });
-  </script>
+    </script>
 </body>
 </html>
