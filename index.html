@@ -3,8 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>LingBriefs</title>
-  <!-- DataTables CSS -->
-  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
       <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,46 +50,31 @@
   <p>This site hosts data about amicus briefs filed by linguists at the Supreme Court.  Please forgive the site's current appearance.  It is under construction.</p>
 
   <h1>Supreme Court Linguistics Amicus Briefs</h1>
-  <table id="data-table" class="display" border="1"></table>
+  <table id="data-table" border="1"></table>
 
-  <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-    <!-- DataTables JS -->
-    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script>
+        const sheetId = '17IfQtXNHf5QUUiNMvhtD6fGk_lQkbTsBqGZiWYoL8KM';
+        const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
 
-    <script>
-  const sheetId = '17IfQtXNHf5QUUiNMvhtD6fGk_lQkbTsBqGZiWYoL8KM';
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
+        fetch(url)
+            .then(response => response.text())
+            .then(csv => {
+                const rows = csv.split("\n").map(row => row.split(","));
+                const table = document.getElementById("data-table");
 
-  fetch(url)
-    .then(response => response.text())
-    .then(csv => {
-      const rows = csv.trim().split("\n").map(row => row.split(","));
-      const table = document.getElementById("data-table");
-
-      // Clear table first (optional safety)
-      table.innerHTML = "";
-
-      rows.forEach((row, rowIndex) => {
-          const tr = document.createElement("tr");
-          row.forEach(cell => {
-              const cellElement = rowIndex === 0 ? document.createElement("th") : document.createElement("td");
-              cellElement.textContent = cell.trim();
-              tr.appendChild(cellElement);
-          });
-          table.appendChild(tr);
-      });
-
-      // <-- Important part:
-      // Use a tiny delay to make sure DOM updates
-      setTimeout(() => {
-          $('#data-table').DataTable();
-      }, 100); // 100 milliseconds
-    })
-    .catch(error => {
-      console.error('Error fetching the CSV:', error);
-    });
-</script>
-
+                rows.forEach(row => {
+                    const tr = document.createElement("tr");
+                    row.forEach(cell => {
+                        const td = document.createElement("td");
+                        td.textContent = cell;
+                        tr.appendChild(td);
+                    });
+                    table.appendChild(tr);
+                });
+            })
+            .catch(error => {
+                console.error('Error fetching the CSV:', error);
+            });
+  </script>
 </body>
 </html>
