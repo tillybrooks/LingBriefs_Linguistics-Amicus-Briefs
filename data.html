@@ -63,6 +63,8 @@
     th, td {
         padding: 12px 15px;
         text-align: left;
+        vertical-align: top;
+        word-break: break-word;
     }
 
     tr:nth-child(even) {
@@ -152,7 +154,18 @@ fetch(url)
   .then(response => response.text())
   .then(csv => {
       const parsed = Papa.parse(csv, { header: false });
-      const rows = parsed.data.filter(row => row.length > 1); // skip empty rows
+      //const rows = parsed.data.filter(row => row.length > 1); // code below (through .filter(row =>row.some...) replaces this
+      // Get the max number of non-empty cells across all rows
+const maxCols = Math.max(...parsed.data.map(row => {
+    let i = row.length - 1;
+    while (i >= 0 && row[i].trim() === "") i--;
+    return i + 1;
+}));
+
+// Trim all rows to maxCols
+const rows = parsed.data
+    .map(row => row.slice(0, maxCols))
+    .filter(row => row.some(cell => cell.trim() !== ""));
 
       const table = document.getElementById("data-table");
 
