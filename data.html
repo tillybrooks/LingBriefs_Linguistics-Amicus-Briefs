@@ -37,7 +37,7 @@
     .search-container {
         text-align: right;
         margin-bottom: 10px;
-        width: 90%;
+        width: 95%;
         margin-left: auto;
         margin-right: auto;
     }
@@ -92,6 +92,15 @@
     th {
         background-color: #007bff;
         color: white;
+        cursor: pointer;
+    }
+
+    th.sorted-asc::after {
+        content: " ▲";
+    }
+
+    th.sorted-desc::after {
+        content: " ▼";
     }
   </style>
 </head>
@@ -239,6 +248,28 @@ rows[0].forEach((header, index) => {
               rows[i].style.display = rowText.includes(query) ? "" : "none";
           }
       });
+
+      // Column sorting
+          headerRow.querySelectorAll("th").forEach((th, colIndex) => {
+              th.addEventListener("click", () => {
+                  const ascending = !th.classList.contains("sorted-asc");
+
+                  // Remove sorting indicators from all headers
+                  headerRow.querySelectorAll("th").forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
+                  th.classList.add(ascending ? "sorted-asc" : "sorted-desc");
+
+                  const sortedRows = Array.from(tbody.querySelectorAll("tr"))
+                      .sort((a, b) => {
+                          const aText = a.children[colIndex].textContent.trim();
+                          const bText = b.children[colIndex].textContent.trim();
+                          return ascending
+                              ? aText.localeCompare(bText, undefined, { numeric: true })
+                              : bText.localeCompare(aText, undefined, { numeric: true });
+                      });
+
+                  sortedRows.forEach(row => tbody.appendChild(row));
+              });
+          });
   })
   .catch(error => {
       console.error('Error fetching the CSV:', error);
