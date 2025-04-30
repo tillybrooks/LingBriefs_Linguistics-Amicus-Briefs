@@ -50,14 +50,19 @@
         border-radius: 5px;
     }
 
+    .table-wrapper {
+        overflow-x: auto;
+        max-width: 100%;
+        margin: auto;
+    }
+
     table {
         width: 100%;
-        margin: auto;
+        min-width: 1000px;
         border-collapse: collapse;
-        table-layout: fixed;
+        table-layout: auto;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         border-radius: 10px;
-        overflow: hidden;
         background-color: white;
     }
 
@@ -99,8 +104,10 @@
     <input type="text" id="search" placeholder="Type to filter...">
   </div>
 
-  <table id="data-table" border="1"></table>
-
+  <div class="table-wrapper">
+    <table id="data-table" border="1"></table>
+  </div>
+  
   <script>
     /*
     const sheetId = '1S__NeG5e71tLqqq0v7mmF1087nNrJQrz38pzrN7hQtc';
