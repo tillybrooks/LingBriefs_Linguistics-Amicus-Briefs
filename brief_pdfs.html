@@ -2,35 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PDF Viewer</title>
+  <title>LingBriefs – PDF Viewer</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       margin: 40px;
       background-color: #f8f9fa;
+      color: #333;
     }
+
+    nav {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    nav a {
+      margin: 0 15px;
+      text-decoration: none;
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    nav a:hover {
+      text-decoration: underline;
+    }
+
     h1 {
       text-align: center;
+      margin-bottom: 20px;
     }
+
     .pdf-container {
       margin: 20px auto;
       max-width: 800px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
+
     iframe {
       width: 100%;
       height: 600px;
       border: none;
     }
+
     .pdf-links {
       text-align: center;
       margin-top: 20px;
+    }
+
+    .pdf-links a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .pdf-links a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
-  <h1>View Selected PDFs</h1>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="data.html">LingBrief Data</a>
+    <a href="brief_pdfs.html">Brief PDFs</a>
+  </nav>
+
+  <h1>View Brief PDFs</h1>
 
   <div class="pdf-container">
     <iframe src="assets/pdfs/file1.pdf"></iframe>
