@@ -66,6 +66,12 @@
         background-color: white;
     }
 
+    .wide-column {
+        min-width: 300px;
+        width: 30%;
+    }
+
+
     th, td {
         padding: 12px 15px;
         text-align: left;
@@ -181,22 +187,44 @@ const rows = parsed.data
 
       const thead = document.createElement("thead");
       const headerRow = document.createElement("tr");
-      rows[0].forEach(header => {
+      /*rows[0].forEach(header => {
           const th = document.createElement("th");
           th.textContent = header;
           headerRow.appendChild(th);
-      });
+      }); */
+      const columnClasses = [];
+rows[0].forEach((header, index) => {
+    const th = document.createElement("th");
+    th.textContent = header;
+
+    // Assign wide-column class to specific headers
+    if (header.toLowerCase().includes("notes")) {
+        th.classList.add("wide-column");
+        columnClasses[index] = "wide-column";
+    } else {
+        columnClasses[index] = "";
+    }
+
+    headerRow.appendChild(th);
+});
       thead.appendChild(headerRow);
       table.appendChild(thead);
 
       const tbody = document.createElement("tbody");
       for (let i = 1; i < rows.length; i++) {
           const tr = document.createElement("tr");
-          rows[i].forEach(cell => {
+          rows[i].forEach((cell, j) => {
+                const td = document.createElement("td");
+                td.textContent = cell;
+                if (columnClasses[j]) td.classList.add(columnClasses[j]);
+                tr.appendChild(td);
+            });
+
+        /*rows[i].forEach(cell => {
               const td = document.createElement("td");
               td.textContent = cell;
               tr.appendChild(td);
-          });
+          }); */
           tbody.appendChild(tr);
       }
       table.appendChild(tbody);
