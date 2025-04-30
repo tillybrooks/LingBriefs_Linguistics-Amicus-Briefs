@@ -121,7 +121,7 @@
               const tr = document.createElement("tr");
               rows[i].forEach(cell => {
                   const td = document.createElement("td");
-                  td.textContent = cell;
+                  td.textContent = cell.replace(/^"(.*)"$/, "$1");
                   tr.appendChild(td);
               });
               tbody.appendChild(tr);
