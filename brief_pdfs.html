@@ -7,14 +7,16 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      margin: 40px;
+      margin: 0;
       background-color: #f8f9fa;
       color: #333;
     }
 
     nav {
       text-align: center;
-      margin-bottom: 40px;
+      padding: 20px 0;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     nav a {
@@ -30,22 +32,49 @@
 
     h1 {
       text-align: center;
-      margin-bottom: 20px;
+      margin: 20px 0;
     }
 
-    .pdf-links {
-      text-align: center;
-      margin-top: 20px;
+    .container {
+      display: flex;
+      height: calc(100vh - 160px);
+      padding: 20px;
+      box-sizing: border-box;
     }
 
-    .pdf-links a {
-      color: #007bff;
-      text-decoration: none;
+    .viewer {
+      flex: 3;
+      margin-right: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .viewer iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .sidebar {
+      flex: 1;
+      overflow-y: auto;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      padding: 10px;
+    }
+
+    .pdf-link {
       display: block;
       margin: 10px 0;
+      color: #007bff;
+      text-decoration: none;
+      cursor: pointer;
     }
 
-    .pdf-links a:hover {
+    .pdf-link:hover {
       text-decoration: underline;
     }
   </style>
@@ -60,12 +89,17 @@
 
   <h1>View Brief PDFs</h1>
 
-  <div class="pdf-links" id="pdf-links">
-    <p>Loading briefs...</p>
+  <div class="container">
+    <div class="viewer">
+      <iframe id="pdf-viewer" src=""></iframe>
+    </div>
+    <div class="sidebar" id="pdf-links">
+      <p>Loading briefs...</p>
+    </div>
   </div>
 
   <script>
-    const sheetId = '1AHDRehW1-axdBhLhLsp7QvEm5SLGISDekXfolkIGPMM';
+    const sheetId = '1AHDRehW1-axdBhLhLsp7QvEm5SLGISDekXfolkIGPMM'; 
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
 
     fetch(url)
@@ -73,17 +107,29 @@
       .then(csv => {
         const parsed = Papa.parse(csv, { header: true });
         const container = document.getElementById("pdf-links");
-        container.innerHTML = ""; // Clear loading message
+        const viewer = document.getElementById("pdf-viewer");
+        container.innerHTML = ""; // Clear loading text
+
+        let firstLoaded = false;
 
         parsed.data.forEach(row => {
           const title = row["Title"];
           const filename = row["File Name"];
           if (title && filename) {
             const link = document.createElement("a");
-            link.href = `assets/brief_pdfs/${filename}`;
-            link.target = "_blank";
             link.textContent = title;
+            link.href = "#";
+            link.className = "pdf-link";
+            link.addEventListener("click", () => {
+              viewer.src = `assets/brief_pdfs/${filename}`;
+            });
             container.appendChild(link);
+
+            // Auto-load first file
+            if (!firstLoaded) {
+              viewer.src = `assets/brief_pdfs/${filename}`;
+              firstLoaded = true;
+            }
           }
         });
       })
