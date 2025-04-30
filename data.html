@@ -54,6 +54,7 @@
         overflow-x: auto;
         max-width: 100%;
         margin: auto;
+        height: 75vh;
     }
 
     table {
@@ -66,12 +67,6 @@
         background-color: white;
     }
 
-    .wide-column {
-        min-width: 300px;
-        width: 30%;
-    }
-
-
     th, td {
         padding: 12px 15px;
         text-align: left;
@@ -79,6 +74,32 @@
         white-space: normal;
         word-break: normal;
         overflow-wrap: break-word;
+    }
+
+    th {
+        background-color: #007bff;
+        color: white;
+        cursor: pointer;
+        position: sticky;
+        top: 0;
+        z-index: 1;
+    }
+
+    /* Sorting arrows always visible */
+    th::after {
+        content: " ⇅";
+        font-size: 0.9em;
+        opacity: 0.4;
+    }
+
+    th.sorted-asc::after {
+        content: " ▲";
+        opacity: 1;
+    }
+
+    th.sorted-desc::after {
+        content: " ▼";
+        opacity: 1;
     }
 
     tr:nth-child(even) {
@@ -89,18 +110,10 @@
         background-color: #e2e6ea;
     }
 
-    th {
-        background-color: #007bff;
-        color: white;
-        cursor: pointer;
-    }
-
-    th.sorted-asc::after {
-        content: " ▲";
-    }
-
-    th.sorted-desc::after {
-        content: " ▼";
+    /* Wider columns */
+    .wide-column {
+        min-width: 300px;
+        width: 35%;
     }
   </style>
 </head>
@@ -122,159 +135,102 @@
   <div class="table-wrapper">
     <table id="data-table" border="1"></table>
   </div>
-  
+
   <script>
-    /*
     const sheetId = '1S__NeG5e71tLqqq0v7mmF1087nNrJQrz38pzrN7hQtc';
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
 
     fetch(url)
       .then(response => response.text())
       .then(csv => {
-          const rows = csv.split("\n").filter(row => row.trim() !== "").map(row => row.split(","));
+          const parsed = Papa.parse(csv, { header: false });
+
+          // Get the max number of non-empty cells across all rows
+          const maxCols = Math.max(...parsed.data.map(row => {
+              let i = row.length - 1;
+              while (i >= 0 && row[i].trim() === "") i--;
+              return i + 1;
+          }));
+
+          const rows = parsed.data
+              .map(row => row.slice(0, maxCols))
+              .filter(row => row.some(cell => cell.trim() !== ""));
+
           const table = document.getElementById("data-table");
 
-          // Build table header
           const thead = document.createElement("thead");
           const headerRow = document.createElement("tr");
-          rows[0].forEach(header => {
+          const columnClasses = [];
+
+          rows[0].forEach((header, index) => {
               const th = document.createElement("th");
               th.textContent = header;
+
+              // Assign wide-column class based on header name
+              const lower = header.toLowerCase();
+              if (
+                  lower.includes("notes") ||
+                  lower.includes("brief title") ||
+                  lower.includes("amici") ||
+                  lower.includes("text of citation")
+              ) {
+                  th.classList.add("wide-column");
+                  columnClasses[index] = "wide-column";
+              } else {
+                  columnClasses[index] = "";
+              }
+
               headerRow.appendChild(th);
           });
           thead.appendChild(headerRow);
           table.appendChild(thead);
 
-          // Build table body
           const tbody = document.createElement("tbody");
           for (let i = 1; i < rows.length; i++) {
               const tr = document.createElement("tr");
-              rows[i].forEach(cell => {
+              rows[i].forEach((cell, j) => {
                   const td = document.createElement("td");
-                  td.textContent = cell.replace(/^"(.*)"$/, "$1");
+                  td.textContent = cell;
+                  if (columnClasses[j]) td.classList.add(columnClasses[j]);
                   tr.appendChild(td);
               });
               tbody.appendChild(tr);
           }
           table.appendChild(tbody);
 
-          // Enable search filtering
+          // Global search
           const searchInput = document.getElementById("search");
           searchInput.addEventListener("input", function () {
               const query = this.value.toLowerCase();
-              const rows = tbody.getElementsByTagName("tr");
-              for (let i = 0; i < rows.length; i++) {
-                  const rowText = rows[i].textContent.toLowerCase();
-                  rows[i].style.display = rowText.includes(query) ? "" : "none";
+              const dataRows = tbody.getElementsByTagName("tr");
+              for (let i = 0; i < dataRows.length; i++) {
+                  const rowText = dataRows[i].textContent.toLowerCase();
+                  dataRows[i].style.display = rowText.includes(query) ? "" : "none";
               }
           });
-      })
-      .catch(error => {
-          console.error('Error fetching the CSV:', error);
-      }); */
-    const sheetId = '1S__NeG5e71tLqqq0v7mmF1087nNrJQrz38pzrN7hQtc';
-const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
 
-fetch(url)
-  .then(response => response.text())
-  .then(csv => {
-      const parsed = Papa.parse(csv, { header: false });
-      //const rows = parsed.data.filter(row => row.length > 1); // code below (through .filter(row =>row.some...) replaces this
-      // Get the max number of non-empty cells across all rows
-const maxCols = Math.max(...parsed.data.map(row => {
-    let i = row.length - 1;
-    while (i >= 0 && row[i].trim() === "") i--;
-    return i + 1;
-}));
-
-// Trim all rows to maxCols
-const rows = parsed.data
-    .map(row => row.slice(0, maxCols))
-    .filter(row => row.some(cell => cell.trim() !== ""));
-
-      const table = document.getElementById("data-table");
-
-      const thead = document.createElement("thead");
-      const headerRow = document.createElement("tr");
-      /*rows[0].forEach(header => {
-          const th = document.createElement("th");
-          th.textContent = header;
-          headerRow.appendChild(th);
-      }); */
-      const columnClasses = [];
-rows[0].forEach((header, index) => {
-    const th = document.createElement("th");
-    th.textContent = header;
-
-    // Assign wide-column class to specific headers
-    if (header.toLowerCase().includes("notes")) {
-        th.classList.add("wide-column");
-        columnClasses[index] = "wide-column";
-    } else {
-        columnClasses[index] = "";
-    }
-
-    headerRow.appendChild(th);
-});
-      thead.appendChild(headerRow);
-      table.appendChild(thead);
-
-      const tbody = document.createElement("tbody");
-      for (let i = 1; i < rows.length; i++) {
-          const tr = document.createElement("tr");
-          rows[i].forEach((cell, j) => {
-                const td = document.createElement("td");
-                td.textContent = cell;
-                if (columnClasses[j]) td.classList.add(columnClasses[j]);
-                tr.appendChild(td);
-            });
-
-        /*rows[i].forEach(cell => {
-              const td = document.createElement("td");
-              td.textContent = cell;
-              tr.appendChild(td);
-          }); */
-          tbody.appendChild(tr);
-      }
-      table.appendChild(tbody);
-
-      // Search filtering
-      const searchInput = document.getElementById("search");
-      searchInput.addEventListener("input", function () {
-          const query = this.value.toLowerCase();
-          const rows = tbody.getElementsByTagName("tr");
-          for (let i = 0; i < rows.length; i++) {
-              const rowText = rows[i].textContent.toLowerCase();
-              rows[i].style.display = rowText.includes(query) ? "" : "none";
-          }
-      });
-
-      // Column sorting
+          // Column sorting
           headerRow.querySelectorAll("th").forEach((th, colIndex) => {
               th.addEventListener("click", () => {
                   const ascending = !th.classList.contains("sorted-asc");
-
-                  // Remove sorting indicators from all headers
                   headerRow.querySelectorAll("th").forEach(h => h.classList.remove("sorted-asc", "sorted-desc"));
                   th.classList.add(ascending ? "sorted-asc" : "sorted-desc");
 
-                  const sortedRows = Array.from(tbody.querySelectorAll("tr"))
-                      .sort((a, b) => {
-                          const aText = a.children[colIndex].textContent.trim();
-                          const bText = b.children[colIndex].textContent.trim();
-                          return ascending
-                              ? aText.localeCompare(bText, undefined, { numeric: true })
-                              : bText.localeCompare(aText, undefined, { numeric: true });
-                      });
+                  const sortedRows = Array.from(tbody.querySelectorAll("tr")).sort((a, b) => {
+                      const aText = a.children[colIndex].textContent.trim();
+                      const bText = b.children[colIndex].textContent.trim();
+                      return ascending
+                          ? aText.localeCompare(bText, undefined, { numeric: true })
+                          : bText.localeCompare(aText, undefined, { numeric: true });
+                  });
 
                   sortedRows.forEach(row => tbody.appendChild(row));
               });
           });
-  })
-  .catch(error => {
-      console.error('Error fetching the CSV:', error);
-  });
-
+      })
+      .catch(error => {
+          console.error('Error fetching the CSV:', error);
+      });
   </script>
 </body>
 </html>
